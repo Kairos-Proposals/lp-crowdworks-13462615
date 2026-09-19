@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos ご提案 | WordPress × Claude Code 運用サポート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-darker:#0F1A22;
+    --bg-dark:#16232F;
+    --navy:#1B2A3A;
+    --bg-light:#EEF2F3;
+    --bg-card:#FFFFFF;
+    --blue:#3E7CB1;
+    --amber:#E8A33D;
+    --mint:#5FB49C;
+    --red:#D96C6C;
+    --text-dark:#1B2A3A;
+    --text-light:#F4F7F8;
+    --text-muted:#7C8A99;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Noto Sans JP', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--sans);
+    color:var(--text-dark);
+    background:var(--bg-light);
+    line-height:1.8;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:var(--sans);font-weight:900;}
+  .mono{font-family:var(--mono);}
+  .container{max-width:1080px;margin:0 auto;padding:0 24px;}
+  a{text-decoration:none;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(62,124,177,0.25), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(95,180,156,0.18), transparent 50%),
+      linear-gradient(160deg, var(--bg-darker) 0%, var(--navy) 60%, #1E3244 100%);
+    color:var(--text-light);
+    padding:100px 0 80px;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"{ }";
+    position:absolute;
+    top:-60px; right:-20px;
+    font-family:var(--mono);
+    font-size:280px;
+    font-weight:800;
+    color:rgba(255,255,255,0.04);
+    line-height:1;
+    pointer-events:none;
+  }
+  .hero::after{
+    content:"</>";
+    position:absolute;
+    bottom:-40px; left:-30px;
+    font-family:var(--mono);
+    font-size:180px;
+    font-weight:800;
+    color:rgba(255,255,255,0.035);
+    pointer-events:none;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    color:var(--mint);
+    background:rgba(95,180,156,0.1);
+    border:1px solid rgba(95,180,156,0.35);
+    padding:7px 16px;
+    border-radius:999px;
+    margin-bottom:28px;
+  }
+  .badge::before{content:"●"; font-size:8px; animation:blink 1.6s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+  .hero-grid{
+    position:relative;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:48px;
+    align-items:center;
+  }
+  .hero-copy h1{
+    font-size:clamp(28px, 4vw, 42px);
+    line-height:1.5;
+    margin-bottom:20px;
+  }
+  .hero-copy h1 span{
+    display:block;
+    color:var(--amber);
+    font-family:var(--mono);
+    font-size:0.6em;
+    letter-spacing:0.02em;
+    margin-bottom:10px;
+    font-weight:700;
+  }
+  .hero-copy p{
+    color:#C6D2DB;
+    font-size:15.5px;
+    max-width:480px;
+  }
+
+  .terminal{
+    background:#0D171F;
+    border-radius:12px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    overflow:hidden;
+    font-family:var(--mono);
+    font-size:13.5px;
+  }
+  .terminal-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 16px;
+    background:#141F29;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.r{background:#D96C6C;}
+  .dot.y{background:#E8A33D;}
+  .dot.g{background:#5FB49C;}
+  .terminal-tab{
+    margin-left:10px;
+    color:#7C8A99;
+    font-size:12px;
+  }
+  .terminal-body{padding:22px 20px 26px;color:#DCE6EC;}
+  .terminal-body .line{margin-bottom:10px; white-space:pre-wrap;}
+  .terminal-body .prompt{color:var(--mint);}
+  .terminal-body .cmt{color:#5A6C7A;}
+  .terminal-body .val{color:var(--amber);}
+  .cursor{display:inline-block;width:7px;height:14px;background:var(--mint);margin-left:2px;animation:blink 1s steps(1) infinite;vertical-align:-2px;}
+
+  @media(max-width:820px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero{padding:70px 0 60px;}
+  }
+
+  /* ---------- SECTION COMMON ---------- */
+  section{padding:88px 0;}
+  .eyebrow{
+    font-family:var(--mono);
+    color:var(--blue);
+    font-size:12.5px;
+    letter-spacing:0.12em;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .sec-title{
+    font-size:clamp(22px,3vw,30px);
+    margin-bottom:18px;
+    color:var(--navy);
+  }
+  .lead{
+    color:#4C5D6B;
+    font-size:15.5px;
+    max-width:680px;
+  }
+
+  /* ---------- UNDERSTANDING ---------- */
+  .understand{background:var(--bg-light);}
+  .flow{
+    margin-top:56px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+  }
+  .flow-step{
+    background:var(--bg-card);
+    border-radius:10px;
+    padding:22px 18px;
+    border:1px solid #DCE3E8;
+    position:relative;
+  }
+  .flow-step .num{
+    font-family:var(--mono);
+    color:var(--mint);
+    font-weight:700;
+    font-size:13px;
+    margin-bottom:10px;
+    display:block;
+  }
+  .flow-step h4{font-size:15px;margin-bottom:8px;color:var(--navy);}
+  .flow-step p{font-size:13px;color:#6B7C8C;}
+  .flow-step.current{
+    border:1px solid var(--amber);
+    background:linear-gradient(180deg,#FFFBF3, #FFFFFF);
+  }
+  .flow-step.current .num{color:var(--amber);}
+  .flow-arrow{
+    display:none;
+  }
+  @media(max-width:900px){
+    .flow{grid-template-columns:1fr;}
+  }
+
+  .diffbox{
+    margin-top:40px;
+    background:#0D171F;
+    border-radius:10px;
+    font-family:var(--mono);
+    font-size:13px;
+    overflow:hidden;
+  }
+  .diffbox .drow{padding:8px 20px;color:#B9C6CF;}
+  .diffbox .plus{background:rgba(95,180,156,0.12);color:#8FD9C4;}
+  .diffbox .minus{background:rgba(217,108,108,0.1);color:#E29B9B;}
+
+  /* ---------- VALUE ---------- */
+  .value{background:var(--navy);color:var(--text-light);}
+  .value .eyebrow{color:var(--mint);}
+  .value .sec-title{color:#fff;}
+  .value .lead{color:#AEC0CC;}
+  .card-grid{
+    margin-top:50px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+  }
+  .vcard{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px;
+    padding:26px 22px;
+    transition:transform .25s, border-color .25s;
+  }
+  .vcard:hover{transform:translateY(-4px);border-color:var(--mint);}
+  .vcard .tag{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--amber);
+    margin-bottom:14px;
+    display:block;
+  }
+  .vcard h3{font-size:16.5px;margin-bottom:10px;color:#fff;}
+  .vcard p{font-size:13.5px;color:#B6C4CE;}
+  @media(max-width:900px){
+    .card-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:600px){
+    .card-grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- SCHEDULE ---------- */
+  .schedule{background:var(--bg-light);}
+  .timeline{
+    margin-top:56px;
+    position:relative;
+    padding-left:28px;
+  }
+  .timeline::before{
+    content:"";
+    position:absolute;
+    left:6px; top:6px; bottom:6px;
+    width:2px;
+    background:linear-gradient(180deg, var(--blue), var(--mint));
+  }
+  .tl-item{position:relative;margin-bottom:34px;}
+  .tl-item:last-child{margin-bottom:0;}
+  .tl-item::before{
+    content:"";
+    position:absolute;
+    left:-28px; top:4px;
+    width:14px;height:14px;
+    background:var(--bg-light);
+    border:3px solid var(--blue);
+    border-radius:50%;
+  }
+  .tl-item.done::before{border-color:var(--mint);}
+  .tl-item .day{
+    font-family:var(--mono);
+    color:var(--blue);
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:0.05em;
+  }
+  .tl-item h4{font-size:16px;margin:6px 0 6px;color:var(--navy);}
+  .tl-item p{font-size:13.5px;color:#5C6D7A;max-width:600px;}
+
+  /* ---------- CLOSING ---------- */
+  .closing{
+    background:
+      radial-gradient(circle at 80% 20%, rgba(232,163,61,0.18), transparent 45%),
+      radial-gradient(circle at 20% 80%, rgba(62,124,177,0.2), transparent 50%),
+      linear-gradient(160deg, var(--bg-darker), var(--navy));
+    color:var(--text-light);
+    text-align:center;
+    position:relative;
+  }
+  .closing h2{
+    font-size:clamp(24px,3.6vw,34px);
+    margin-bottom:18px;
+    color:#fff;
+  }
+  .closing p{color:#B6C4CE; max-width:560px; margin:0 auto 34px;}
+  .cta-row{display:flex; gap:16px; justify-content:center; flex-wrap:wrap;}
+  .btn{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:14px;
+    padding:15px 30px;
+    border-radius:8px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .btn-primary{
+    background:var(--mint);
+    color:#0F1A22;
+  }
+  .btn-outline{
+    border:1px solid rgba(255,255,255,0.3);
+    color:#fff;
+  }
+  .foot-note{
+    margin-top:48px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#5C6D7A;
+  }
+
+  footer{
+    background:var(--bg-darker);
+    color:#5C6D7A;
+    text-align:center;
+    padding:26px 0;
+    font-size:12.5px;
+    font-family:var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="badge">Kairos からのご提案 — Web制作・システム開発チーム</span>
+      <h1>
+        <span>$ whoami &gt;&gt; サプコレ様のWordPress運用パートナー</span>
+        コードを書くのはClaude Code。<br>
+        言葉を翻訳し、橋を架けるのが私たちの仕事です。
+      </h1>
+      <p>ミラーサイト構築からカスタマイズ、本番移行まで来た今、次に必要なのは「動き続けるサイト」を支える運用の手。私たちKairosが、そのバトンを引き継ぎます。</p>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="terminal-tab">kairos@sapcolle: ~/proposal</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$</span> cat mission.md</div>
+        <div class="line cmt"># WordPress × Claude Code 運用サポート</div>
+        <div class="line">status: <span class="val">"本番移行 準備完了"</span></div>
+        <div class="line">next_step: <span class="val">"30日間の伴走サポート"</span></div>
+        <div class="line">communication: <span class="val">"Chatwork / 即レス対応"</span></div>
+        <div class="line"><span class="prompt">$</span> ./kairos --join --profile-score 4.8+<span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UNDERSTANDING -->
+<section class="understand">
+  <div class="container">
+    <div class="eyebrow">// 案件理解</div>
+    <h2 class="sec-title">私たちは、この案件をこう読み解きました。</h2>
+    <p class="lead">
+      これは単なる「不具合対応」の募集ではなく、Claude Codeで作られた仕組みを、人の手で正しく運用に乗せていくフェーズだと理解しています。
+      ミラー環境の構築 → 独自カスタマイズ → 本番移行という工程を経て、これから出てくるのは「使ってみて初めてわかる要望」への対応。
+      その一つひとつを、サーバーとClaude Codeをつなぎながら、チャットワークで密に、必要なときにすぐ形にする。それが今回求められている役割だと考えます。
+    </p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <span class="num">STEP 01</span>
+        <h4>ミラーサイト構築</h4>
+        <p>既存WordPressをテスト環境に再現</p>
+      </div>
+      <div class="flow-step">
+        <span class="num">STEP 02</span>
+        <h4>独自カスタマイズ</h4>
+        <p>Claude Codeによる実装・調整</p>
+      </div>
+      <div class="flow-step">
+        <span class="num">STEP 03</span>
+        <h4>本番環境へ移行</h4>
+        <p>ここまでは完了済みのフェーズ</p>
+      </div>
+      <div class="flow-step current">
+        <span class="num">STEP 04 · NOW</span>
+        <h4>30日間の運用サポート</h4>
+        <p>細かな要望への継続対応</p>
+      </div>
+    </div>
+
+    <div class="diffbox">
+      <div class="drow minus">- 「作った後、誰が育てるか決まっていない」</div>
+      <div class="drow plus">+ 「Kairosが、その先の30日間を引き受けます」</div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE -->
+<section class="value">
+  <div class="container">
+    <div class="eyebrow">// 提供価値</div>
+    <h2 class="sec-title">Kairos が持ち込めるもの</h2>
+    <p class="lead">技術力だけでなく、「AIが作った仕組みを、人が安心して運用できる状態」に整える力を大切にしています。</p>
+
+    <div class="card-grid">
+      <div class="vcard">
+        <span class="tag">// server_connect.sh</span>
+        <h3>サーバー接続 × Claude Code連携</h3>
+        <p>サーバーへの接続からClaude Codeとの連携運用まで、実務での知見をもとに要望を確実に形にします。</p>
+      </div>
+      <div class="vcard">
+        <span class="tag">// response.speed</span>
+        <h3>チャットワークでの即応対応</h3>
+        <p>毎日ではなく「必要な時にすぐ」。連絡が来たタイミングで滞りなく対応できる体制を整えます。</p>
+      </div>
+      <div class="vcard">
+        <span class="tag">// wp_maintenance.core</span>
+        <h3>WordPress保守・改善の経験</h3>
+        <p>公開後に生まれる細かな不具合や表示崩れ、追加要望まで、実運用視点で対応します。</p>
+      </div>
+      <div class="vcard">
+        <span class="tag">// spec_reading.ai</span>
+        <h3>仕様書・引き継ぎ資料の読解力</h3>
+        <p>これまでのやり取りや仕様書を丁寧に読み込み、経緯を踏まえた上でズレのない対応をします。</p>
+      </div>
+      <div class="vcard">
+        <span class="tag">// flexibility == true</span>
+        <h3>打ち合わせ・仕様変更への柔軟性</h3>
+        <p>一度お打ち合わせの上、状況に応じて臨機応変に動ける体制でご提案しています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="schedule">
+  <div class="container">
+    <div class="eyebrow">// 進め方</div>
+    <h2 class="sec-title">30日間の伴走イメージ</h2>
+    <p class="lead">最初の数日で基盤を整え、残りの期間は「必要なときに、確実に」対応する形で進めます。</p>
+
+    <div class="timeline">
+      <div class="tl-item done">
+        <div class="day">DAY 0</div>
+        <h4>打ち合わせ・情報共有</h4>
+        <p>これまでの経緯、仕様書、やり取り履歴を共有いただき、認識をすり合わせます。</p>
+      </div>
+      <div class="tl-item done">
+        <div class="day">DAY 1 - 3</div>
+        <h4>環境接続・Claude Code連携確認</h4>
+        <p>サーバー・本番環境への接続を確認し、すぐに対応できる状態を整えます。</p>
+      </div>
+      <div class="tl-item">
+        <div class="day">DAY 4 - 27</div>
+        <h4>要望対応（チャットワーク随時対応）</h4>
+        <p>細かな修正・追加要望が出るたびに、Claude Codeを介して実装・確認・反映します。</p>
+      </div>
+      <div class="tl-item">
+        <div class="day">DAY 28 - 30</div>
+        <h4>振り返り・引き継ぎ整理</h4>
+        <p>対応内容をまとめ、今後の運用に必要な情報を整理してお渡しします。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <div class="container">
+    <div class="eyebrow" style="justify-content:center;display:flex;">// 次のアクション</div>
+    <h2>まずは一度、お話しさせてください。</h2>
+    <p>構築の経緯や仕様書を共有いただければ、初回の打ち合わせで進め方のすり合わせが可能です。臨機応変な対応、密なコミュニケーションでお応えします。</p>
+    <div class="cta-row">
+      <a href="#" class="btn btn-primary">$ chatwork --message "打ち合わせ希望です"</a>
+      <a href="#" class="btn btn-outline">プロフィールを確認する</a>
+    </div>
+    <div class="foot-note">// Kairos - Web制作・システム開発チーム</div>
+  </div>
+</section>
+
+<footer>
+  © Kairos — Web制作・システム開発チーム / サプコレ様への提案書
+</footer>
+
+</body>
+</html>
